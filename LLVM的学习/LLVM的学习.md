@@ -14,8 +14,8 @@
 
 ```bash
 # -emit-llvm标记会告诉clang根据是否存在-c或-S来生成LLVM bitcode或是LLVM汇编码等信息
-clang -emit-llvm -c size.c -o size.bc
-clang -emit-llvm -S -c size.c -o size.ll
+clang -emit-llvm -c test.c -o test.bc
+clang -emit-llvm -S -c test.c -o test.ll
 
 # -fno-discard-value-names取消自动删除变量名
 clang -fno-discard-value-names -emit-llvm -S test.c -o test1.ll
@@ -41,9 +41,74 @@ attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sq
 
 
 
+## 工具
+
+*Doxygen*是一种开源跨平台的，以类似JavaDoc风格描述的文档系统，完全支持C、C++、Java、Objective-C和IDL语言，部分支持PHP、C#。注释的语法与Qt-Doc、KDoc和JavaDoc兼容。
+
+https://llvm.org/doxygen/LICM_8cpp_source.html源码
+
+
+
+## 实例
+
+### first
+
+```c
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+int main()
+{
+	int sum =0;
+	int limit = 12;
+
+	for(int i=0;i<limit-2;i++)  // limit - 2 是循环不变量
+	{
+		sum += i;
+	}
+	
+	return 0;
+
+}
+```
+
 ![image-20211022213816114](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211022213816114.png)
 
+此示例我的主要关注点在`limit - 2`上，这是个显而易见的函数不变量，它存在于for循环的cond部分。
+
 将函数不变量`limit - 2`的计算从循环条件for.cond中移动到了循环入口entry处，这样就不需要每次循环时计算它了。
+
+```c
+# for循环的结构
+for(init; cond; inc) {
+    body
+}
+```
+
+### second
+
+```c
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+int main(){
+  int a = 0, b = 1, tmp;
+
+  for(int i = 0; i < 10; ++i) {
+		tmp = a;
+    a = b;
+    b = b + tmp;
+  }
+  
+  return 0;
+}
+```
+
+此例中在for循环的的cond部分没有了函数不变量，所以我侧重关注此情况的优化方案。
+
+显而易见的是变量tmp只是中间变量，变量b和a分别为斐波那契数列的当前项的值和前一项的值
 
 
 
