@@ -108,7 +108,15 @@ int main(){
 
 此例中在for循环的的cond部分没有了函数不变量，所以我侧重关注此情况的优化方案。
 
-显而易见的是变量tmp只是中间变量，变量b和a分别为斐波那契数列的当前项的值和前一项的值
+显而易见的是变量tmp只是中间变量，变量b和a分别为斐波那契数列的当前项的值和前一项的值。
+
+循环不变式是在循环体的每次执行前后均为真的谓词。循环是重复多次实现的，要证明循环的结果是正确的，就要仿照数学归纳法的方法，即如这次满足某一性质那么下次也满足，则循环完毕性质也成立，显然,循环不变式是很重要的。
+
+在此例子中，b和a分别为斐波那契数列的当前项的值和前一项的值且他们之和为下一项的值，显然在不断的循环中一直为真。
+
+
+
+### summary
 
 
 
@@ -569,6 +577,14 @@ LLVM 支持多种处理[聚合](https://llvm.org/docs/LangRef.html#t-aggregate)�
     %nextindvar = add i32 %indvar, 1
     br label %Loop
   ```
+
+  在运行时，phi 指令根据“在当前 block 之前执行的是哪一个 predecessor(前任) block”来得到相应的值。
+
+  以上面示例中的 phi 指令为例，如果当前 block 之前执行的是 LoopHeader，则该 phi 指令的值是 0，而如果是从 Loop label 过来的，则该 phi 指令的值是 %nextindvar。
+
+  在 phi 指令的语法中，后面是一个列表，列表中的每个元素是一个 value/label 对，每个 label 表示一个当前 block 的 predecessor block，phi 指令就是根据 label 选相应的 value。
+
+  phi 指令必须在 basic block 的最前面，也就是在一个 basic block 中，在 phi 指令之前不允许有非 phi 指令。
 
 - select
 
