@@ -15,7 +15,7 @@
 ```bash
 # -emit-llvm标记会告诉clang根据是否存在-c或-S来生成LLVM bitcode或是LLVM汇编码等信息
 clang -emit-llvm -c test.c -o test.bc
-clang -emit-llvm -S -c test.c -o test.ll
+clang -emit-llvm -S test.c -o test.ll
 
 # -fno-discard-value-names取消自动删除变量名
 clang -fno-discard-value-names -emit-llvm -S test.c -o test1.ll
@@ -160,6 +160,61 @@ int main(){
 
 - 通过phi构建了ssa形式；
 - 将body中计算后的store操作下沉至了end中。
+
+### thrid
+
+```c
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+int main()
+{
+	int sum = 0;
+	int len = 12;
+
+	for(int i = 0; i < len; i++){
+		sum += 1;
+	}
+
+    printf("%d", sum);
+
+    return 0;
+}
+```
+
+![image-20211028142357665](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211028142357665.png)
+
+licm的优化并没有直接获得结果，没有预期中的高级。
+
+### fourth
+
+```c
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+int main()
+{
+	int a = 0;
+	int len = 10;
+
+    char *ptr = malloc(10);
+
+    for(int i = 0; i < len; i++){
+        a = a + 2;
+        ptr ++;
+    }
+
+	return 0;
+}
+```
+
+![image-20211028142657672](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211028142657672.png)
+
+licm的优化也没有直接得到`a = 2 * len`和`ptr = len`，而是通过循环进行计算的。
+
+
 
 
 
@@ -654,3 +709,5 @@ LLVM 支持多种处理[聚合](https://llvm.org/docs/LangRef.html#t-aggregate)�
 - cleanuppad
 
 - 
+
+# 
