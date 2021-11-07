@@ -214,9 +214,29 @@ int main()
 
 licm的优化也没有直接得到`a = 2 * len`和`ptr = len`，而是通过循环进行计算的。
 
+### fifth
 
+```c
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
+int main(){
+	int sum = 0;
+	int limit;
+	scanf("%d", &limit);
 
+	for(int i = 0; i < limit + 2; i++){
+		sum += i;
+	}
+
+	return 0;
+}
+```
+
+![image-20211108002700042](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211108002700042.png)
+
+只进行了循环不变量的外提，因为mem2reg已经做过了SSA结构化处理。
 
 # LLVM 指令集
 
