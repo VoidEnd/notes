@@ -91,6 +91,13 @@ scan-build --use-cc gcc --use-c++ g++ make
 
 ## 简介
 
+KINT是一个使用可伸缩静态分析来检测C程序中整数错误的工具。
+
+- 论文： Improving Integer Security for Systems with KINT 
+- 会议：OSDI2012
+- static analysis , detect integer errors
+- 主页：http://css.csail.mit.edu/kint/
+
 <img src="/Users/mukyuuhate/Documents/GitHub/notes/clang的学习/clang的学习.assets/image-20211107235143069.png" alt="image-20211107235143069" style="zoom:60%;" />
 
 Kint在LLVM bitcode上工作。分析一个软件项目，第一步是生成LLVM bitcode。Kint提供了一个名为`kint-build`的脚本，它调用`gcc`（或`g++`）并同时使用Clang从你的源代码中获取LLVM bitcode，并储存到`.ll`文件。例如：
@@ -158,6 +165,12 @@ $ pcmpck
 你可以在 "pcmpck.txt" 中找到错误报告。
 
 ## range analysis
+
+功能：推断一个值的范围
+
+range计算：
+
+<img src="/Users/mukyuuhate/Documents/GitHub/notes/clang的学习/clang的学习.assets/image-20211101170850640.png" alt="image-20211101170850640" style="zoom:50%;" />
 
 KINT的范围分析推断了跨多个函数（即函数参数、返回值、全局变量和结构字段）的值的可能范围。
 
