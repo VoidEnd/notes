@@ -16,9 +16,9 @@ int main(int argc, const char* argv[]) {
 }
 ```
 
-<img src="D:\git_repository\buffer_overflow.assets\image-20211107200741832.png" alt="image-20211107200741832" style="zoom:50%;" />
+<img src=".\buffer_overflow.assets\image-20211107200741832.png" alt="image-20211107200741832" style="zoom:50%;" />
 
-<img src="D:\git_repository\buffer_overflow.assets\image-20211107200721650.png" alt="image-20211107200721650" style="zoom:50%;" />
+<img src=".\buffer_overflow.assets\image-20211107200721650.png" alt="image-20211107200721650" style="zoom:50%;" />
 
 ## hw_demo
 
@@ -28,11 +28,11 @@ int main(int argc, const char* argv[]) {
 
   **潜在的缺陷**：如果`data * sizeof(int) > SIZE_MAX`，则会出现**整数溢出导致内存越界**。因此进行初始化的for循环导致缓冲区溢出 。
 
-  <img src="D:\git_repository\buffer_overflow.assets\image-20211106164301191.png" alt="image-20211106164301191" style="zoom:60%;" />
+  <img src=".\buffer_overflow.assets\image-20211106164301191.png" alt="image-20211106164301191" style="zoom:60%;" />
 
-  <img src="D:\git_repository\buffer_overflow.assets\image-20211106164333622.png" alt="image-20211106164333622" style="zoom:60%;" />
+  <img src=".\buffer_overflow.assets\image-20211106164333622.png" alt="image-20211106164333622" style="zoom:60%;" />
 
-  <img src="D:\git_repository\buffer_overflow.assets\image-20211106165212139.png" alt="image-20211106165212139" style="zoom:80%;" />
+  <img src=".\buffer_overflow.assets\image-20211106165212139.png" alt="image-20211106165212139" style="zoom:80%;" />
 
   **使用`AddressSanitizer`进行分析**：
 
@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]) {
 
   **使用`AddressSanitizer`进行分析**：
 
-  <img src="D:\git_repository\buffer_overflow.assets\image-20211109154859525.png" alt="image-20211109154859525" style="zoom:100%;" />
+  <img src=".\buffer_overflow.assets\image-20211109154859525.png" alt="image-20211109154859525" style="zoom:100%;" />
 
   ```
   =================================================================
@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
 
   **使用`AddressSanitizer`进行分析**：
 
-  ![image-20211109160123453](D:\git_repository\buffer_overflow.assets\image-20211109160123453.png)
+  ![image-20211109160123453](.\buffer_overflow.assets\image-20211109160123453.png)
 
   ```
   =================================================================
@@ -186,7 +186,7 @@ int main(int argc, const char* argv[]) {
 
   **使用`AddressSanitizer`进行分析**：
 
-  ![image-20211109160452763](D:\git_repository\buffer_overflow.assets\image-20211109160452763.png)
+  ![image-20211109160452763](.\buffer_overflow.assets\image-20211109160452763.png)
 
   ```
   =================================================================
@@ -253,7 +253,7 @@ int main(int argc, const char* argv[]) {
   
   **使用`AddressSanitizer`进行分析**：
   
-  ![image-20211109161713505](D:\git_repository\buffer_overflow.assets\image-20211109161713505.png)
+  ![image-20211109161713505](.\buffer_overflow.assets\image-20211109161713505.png)
 
 ```
 =================================================================
