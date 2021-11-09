@@ -115,3 +115,27 @@
   - **返回值** -- 该函数返回一个指向最终的目标字符串 dest 的指针。
 
 - 
+
+## 指针
+
+- 指针多流程 -- 不同if分支下，两块不同业务流程对统一指针申请内存，申请大小不同，使用时按大块内存使用。（数据共享）
+- 
+
+## Buffer 0verflow 类型
+
+- heap buffer overflow
+
+- stack buffer overflow
+
+- integer overflow to buffer overflow
+
+  有可能 a+b 发生 integer overflow,  导致 ptr 申请到比较小的内存区域，memcpy 的时候发生溢出。
+
+  ```c
+  unsigned int a;
+  unsigned int b;
+  int *ptr =  (int *)malloc(a+b);
+  memcpy(ptr,  buf, a);
+  ```
+
+- 

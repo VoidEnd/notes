@@ -45,6 +45,11 @@
   # -lname :查找静态库名是: libname.a或动态库名是: libname.so的库文件进行链接，优先选择动态库;
   ```
 
+## 基本指令
+
+- [-g](https://clang.llvm.org/docs/UsersManual.html#cmdoption-g) —— 生成完整的调试信息
+- 
+
 # makefile文件
 
 ## 注意事项
@@ -188,5 +193,28 @@ KINT在全局范围表中为每个跨函数实体保留一个范围。最初，K
 为了跨函数传播范围，KINT需要一个系统范围的调用图。为此，KINT以迭代的方式构建调用图。对于每个间接调用点(即函数指针)，KINT从初始化代码中收集可能的目标函数并存储到函数指针中。
 KINT的范围分析采用了严格的混叠规则;也就是说，一个内存位置不能作为两种不同的类型被访问(例如，两个不同的结构体)。违反这个假设会导致范围分析生成不正确的范围。
 在范围表收敛或(更有可能)固定的迭代次数后，范围分析停止并输出它的范围表，约束属将使用它为求解器生成更精确的约束。
+```
+
+# AddressSanitizer
+
+AddressSanitizer是一个内存检查工具，可以定位越界访问，也可以进行内存泄露检查功能。
+
+## 可检测内存错误
+
+- Use after free：访问堆上已经被释放的内存
+- Heap buffer overflow：堆上缓冲区访问溢出
+- Stack buffer overflow：栈上缓冲区访问溢出
+- Global buffer overflow：全局缓冲区访问溢出
+- Use after return：访问栈上已被释放的内存
+- Use after scope：栈对象使用超过定义范围
+- Initialization order bugs：初始化命令错误
+- Memory leaks：内存泄漏
+
+## 指令：
+
+```bash
+-fsanitize=address   			#开启地址越界检查功能
+-fno-omit-frame-pointer	  #开启后，可以出界更详细的错误信息
+-fsanitize=leak  					#开启内存泄露检查功能
 ```
 
