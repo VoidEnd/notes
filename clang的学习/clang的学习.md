@@ -50,12 +50,377 @@
 - [-g](https://clang.llvm.org/docs/UsersManual.html#cmdoption-g) —— 生成完整的调试信息
 - 
 
-# makefile文件
+
+
+# `makefile`文件
 
 ## 注意事项
 
 - 只有要执行的命令前要加上`tab`，而且有的文本编辑器里的`tab`是四个空格，要格外注意，尽量用vim比较规范，且`/etc/vimrc`里不能设置`set expandtab`
 - 
+
+
+
+# `CMake`
+
+`CMakeLists`文件 —— `cmake` —— `make`
+
+## `CMakeLists`文件
+
+### [Embedding LLVM in your project](https://llvm.org/docs/CMake.html#id17)
+
+```cmake
+cmake_minimum_required(VERSION 3.13.4)
+project(SimpleProject)
+
+find_package(LLVM REQUIRED CONFIG)
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+# Set your project compile flags.
+# E.g. if using the C++ header files
+# you will need to enable C++11 support
+# for your compiler.
+
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
+# Now build our tools
+add_executable(simple-tool tool.cpp)
+
+# Find the libraries that correspond to the LLVM components
+# that we wish to use
+# llvm_map_components_to_libnames(llvm_libs support core irreader)
+
+# Link against LLVM libraries
+# target_link_libraries(simple-tool ${llvm_libs})
+target_link_libraries(simple-tool LLVM)
+```
+
+
+
+### 调试
+
+```cmake
+SET(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+```
+
+### 问题
+
+- "Duplicate option categories"' failed. 重复选项类别，一点要注意，依赖库不要重复。
+
+  可能原因是比如cl::opt 的工作方式从根本上不能很好地与共享库配合使用。
+
+  ```
+  CommandLine Error: Option 'debug' registered more than once!
+  LLVM ERROR: inconsistency in registered CommandLine options
+  ```
+
+- 
+
+
+
+## `VScode` `cmake`配置
+
+- `${workspaceFolder}`是当前工作空间（或`vscode`所打开根文件夹）在操作系统中绝对路径
+-  `${workspaceFolderBasename}`是当前工作空间（或`vscode`所打开根文件夹）的名称
+
+在`VScode`底部依次运行，`cmake`，`build`，`debug`，其中将`[all]`切换为想要进行`debug`的可执行文件
+
+### `task.json`
+
+`tasks.json` 这是`VSCode`任务的配置文件，通过配置它可以快速执行各种命令。这里我们利用它来配置**编译构建流程**。我们要执行的任务为**建立build文件夹，在build文件夹中使用`CMake`生成并编译**。通过这个任务配置，**统一全平台下的程序编译命令**。
+
+```json
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        { // 在根文件夹中执行创建文件夹build的命令
+            // 除windows系统外执行的命令为`mkdir -p build`
+            // windows系统是在powershell中执行命令`mkdir -Force build`
+            "label": "build_dir",
+            "command": "mkdir",
+            "type": "shell",
+            "args": [
+                "-p",
+                "build"
+            ],
+            "windows": {
+                "options": {
+                    "shell": {
+                        "executable": "powershell.exe"
+                    }
+                },
+                "args": [
+                    "-Force",
+                    "build"
+                ],
+            }
+        },
+        { // 在build文件夹中调用cmake进行项目配置
+            // 除windows系统外执行的命令为`cmake -DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|MinSizeRel> ../`
+            // windows系统是在visual stuido的环境中执行命令`cmake -DCMAKE_BUILD_TYPE=<Debug|Release|RelWithDebInfo|MinSizeRel>  ../ -G "CodeBlocks - NMake Makefiles"`
+            "label": "cmake",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-DCMAKE_BUILD_TYPE=${input:CMAKE_BUILD_TYPE}",
+                "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", // 生成compile_commands.json 供c/c++扩展提示使用
+                "../"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/build",
+            },
+            "windows": {
+                "args": [
+                    "-DCMAKE_BUILD_TYPE=${input:CMAKE_BUILD_TYPE}",
+                    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+                    "../",
+                    "-G",
+                    "\"CodeBlocks - NMake Makefiles\""
+                ],
+                "options": {
+                    "shell": {
+                        // "executable": "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat",
+                        // 需要根据安装的vs版本调用vs工具命令提示符
+                        "executable": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                        "args": [
+                            "${input:PLATFORM}", //指定平台
+                            "-vcvars_ver=${input:vcvars_ver}", //指定vc环境版本
+                            "&&"
+                        ]
+                    }
+                },
+            },
+            "dependsOn": [
+                "build_dir" // 在task `build_dir` 后执行该task
+            ]
+        },
+        { // 在build文件夹中调用cmake编译构建debug程序
+            // 执行的命令为`cmake --build ./ --target all --`
+            //  windows系统如上需要在visual stuido的环境中执行命令
+            "label": "build",
+            "group": "build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "./",
+                "--target",
+                "all",
+                "--"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/build",
+            },
+            "problemMatcher": "$gcc",
+            "windows": {
+                "options": {
+                    "shell": {
+                        // "executable": "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat",
+                        "executable": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                        "args": [
+                            "${input:PLATFORM}",
+                            "-vcvars_ver=${input:vcvars_ver}",
+                            "&&"
+                        ]
+                    }
+                },
+                "problemMatcher": "$msCompile"
+            },
+            "dependsOn": [
+                "cmake" // 在task `cmake` 后执行该task
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "CMAKE_BUILD_TYPE",
+            "type": "pickString",
+            "description": "What CMAKE_BUILD_TYPE do you want to create?",
+            "options": [
+                "Debug",
+                "Release",
+                "RelWithDebInfo",
+                "MinSizeRel",
+            ],
+            "default": "Debug"
+        },
+        {
+            "id": "PLATFORM",
+            "type": "pickString",
+            "description": "What PLATFORM do you want to create?",
+            "options": [
+                "x86",
+                "amd64",
+                "arm",
+                "x86_arm",
+                "x86_amd64",
+                "amd64_x86",
+                "amd64_arm",
+            ],
+            "default": "amd64"
+        },
+        {
+            "id": "vcvars_ver",
+            "type": "pickString",
+            "description": "What vcvars_ver do you want to create?",
+            "options": [
+                "14.2", // 2019
+                "14.1", // 2017
+                "14.0", // 2015
+            ],
+            "default": "14.2"
+        }
+    ]
+}
+
+```
+
+### `launch.json`
+
+`launch.json` 这是`VSCode`运行调试的配置文件。**全平台统一的调试体验**就靠它了。依赖于`VSCode`的`C/C++`扩展。这里需要告诉`VSCode`你的**`C/C++`程序在哪**，以及**运行参数**，**工作目录**等，**用哪个调试器调试**。
+
+```json
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            // Resolved by CMake Tools:
+            "program": "${workspaceFolder}/${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+```
+
+### `c_cpp_properties.json`
+
+```json
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            // 头文件地址
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/mukyuu/Downloads/BufferOverflow_RangeAnalysis/LLVM-10.0.0/build/bin"
+            ],
+            "defines": [],
+            "compilerPath": "/home/mukyuu/Downloads/BufferOverflow_RangeAnalysis/LLVM-10.0.0/build/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
+```
+
+
+
+## `cmake`设置生成文件的位置
+
+1. `CMAKE_ARCHIVE_OUTPUT_DIRECTORY`：默认存放静态库的文件夹位置；
+2. `CMAKE_LIBRARY_OUTPUT_DIRECTORY`：默认存放动态库的文件夹位置；
+3. `LIBRARY_OUTPUT_PATH`：默认存放库文件的位置，如果产生的是静态库并且没有指定 CMAKE_ARCHIVE_OUTPUT_DIRECTORY 则存放在该目录下，动态库也类似；
+4. `CMAKE_RUNTIME_OUTPUT_DIRECTORY`：存放可执行软件的目录；
+
+```cmake
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/archive)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/library)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/runtime)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/path)
+```
+
+
+
+# 调试工具
+
+`gdb`和`lldb`
+
+## `lldb`
+
+[官方文档](https://lldb.llvm.org/use/tutorial.html)
+
+### 常用指令
+
+```text
+break (b) - 设置断点，也就是程序暂停的地方
+run (r) - 启动目标程序，如果遇到断点则暂停
+step (s) - 进入下一条指令中的函数内部
+backtrace (bt) - 显示当前的有效函数
+frame (f) - 默认显示当前栈的内容，可以通过 frame arg 进入特定的 frame（用作输出本地变量）
+next (n) - 运行当前箭头指向行
+continue (c) - 继续运行程序直到遇到断点。
+```
+
+
+
+## `gdb`
+
+[官方文档](http://www.gnu.org/software/gdb/documentation/)
+
+### 常用指令
+
+```bash
+help：查看命令帮助，具体命令查询在gdb中输入help + 命令,简写h
+run：重新开始运行文件（run-text：加载文本文件，run-bin：加载二进制文件）,简写r
+start：单步执行，运行程序，停在第一执行语句
+list：查看原代码（list-n,从第n行开始查看代码。list+ 函数名：查看具体函数）,简写l
+set：设置变量的值
+next：单步调试（逐过程，函数直接执行）,简写n
+step：单步调试（逐语句：跳入自定义函数内部执行）,简写s
+backtrace：查看函数的调用的栈帧和层级关系,简写bt
+frame：切换函数的栈帧,简写f
+info：查看函数内部局部变量的数值,简写i
+finish：结束当前函数，返回到函数调用点
+continue：继续运行,简写c
+print：打印值及地址,简写p
+quit：退出gdb,简写q
+
+break+num：在第num行设置断点,简写b
+info breakpoints：查看当前设置的所有断点
+delete breakpoints num：删除第num个断点,简写d
+display：追踪查看具体变量值
+undisplay：取消追踪观察变量
+watch：被设置观察点的变量发生修改时，打印显示
+i watch：显示观察点
+enable breakpoints：启用断点
+disable breakpoints：禁用断点
+x：查看内存x/20xw 显示20个单元，16进制，4字节每单元
+run argv[1] argv[2]：调试时命令行传参
+
+如要查看所有的gdb命令，可以在gdb下键入两次Tab(制表符)，运行“help command”可以查看命令command的详细使用格式。
+```
+
+
 
 # clang static analyzer
 
@@ -195,9 +560,9 @@ KINT的范围分析采用了严格的混叠规则;也就是说，一个内存位
 在范围表收敛或(更有可能)固定的迭代次数后，范围分析停止并输出它的范围表，约束属将使用它为求解器生成更精确的约束。
 ```
 
-# AddressSanitizer
+# `AddressSanitizer`
 
-AddressSanitizer是一个内存检查工具，可以定位越界访问，也可以进行内存泄露检查功能。
+`AddressSanitizer`是一个内存检查工具，可以定位越界访问，也可以进行内存泄露检查功能。
 
 ## 可检测内存错误
 
