@@ -10,6 +10,62 @@
 
 
 
+# [Embedding LLVM in your project](https://llvm.org/docs/CMake.html#id17)
+
+```cmake
+cmake_minimum_required(VERSION 3.13.4)
+project(SimpleProject)
+
+find_package(LLVM REQUIRED CONFIG)
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+# Set your project compile flags.
+# E.g. if using the C++ header files
+# you will need to enable C++11 support
+# for your compiler.
+
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
+# Now build our tools
+add_executable(simple-tool tool.cpp)
+
+# Find the libraries that correspond to the LLVM components
+# that we wish to use
+# llvm_map_components_to_libnames(llvm_libs support core irreader)
+
+# Link against LLVM libraries
+# target_link_libraries(simple-tool ${llvm_libs})
+target_link_libraries(simple-tool LLVM)
+```
+
+# 函数
+
+- dump()
+
+  避免调用`dump`的方法，可以通过调用来实现相同的目的：
+
+  ```cpp
+  main_module -> print(llvm::outs(), nullptr);
+  ```
+
+  同样，如果你想转储一个 LLVM 函数，可以这样写：
+
+  ```cpp
+  main_func -> print(llvm::outs());
+  ```
+
+  实际上，从 LLVM 5.0.0 开始，这就是该`dump()`功能的实现方式。
+
+- if (Verbose) llvm::errs()
+
+  对于标准错误，返回对raw_ostream的引用。[question]
+
+- 
+
 # 尝试运行licm优化
 
 ```bash
@@ -77,10 +133,6 @@ https://llvm.org/doxygen/LICM_8cpp_source.html源码
      如果这些条件为真，我们可以将指针循环中的加载和存储提升为使用临时 alloca 变量。然后我们使用[mem2reg](https://llvm.org/docs/Passes.html#passes-mem2reg)功能为变量构造适当的 SSA 形式。
 
 - 
-
-
-
-
 
 ## 实例
 
@@ -517,7 +569,7 @@ LLVM 支持多种处理[聚合](https://llvm.org/docs/LangRef.html#t-aggregate)�
   %ptr = alloca i32, i32 4, align 1024          ; yields i32*:ptr
   %ptr = alloca i32, align 1024                 ; yields i32*:ptr
   # align 的意思是“对齐”
-  # “对齐”的意义是：若一个结构中含有一个int,一个char，一个int则他应该占用4*3=12字节，虽然char本身只占用一个字节的空间
+  # “对齐”的意义是：若一个结构中含有一个int，一个char，一个int则他应该占用4*3=12字节，虽然char本身只占用一个字节的空间
   # 但由于要向4“对齐”所以其占用内存空间仍为4（根据大端小端分别存储）
   ```
 
@@ -637,7 +689,7 @@ LLVM 支持多种处理[聚合](https://llvm.org/docs/LangRef.html#t-aggregate)�
 
 
 
-## 其他操作（[Other Operations](https://llvm.org/docs/LangRef.html#id1961)[¶](https://llvm.org/docs/LangRef.html#other-operations)）
+## 其他操作（[Other Operations](https://llvm.org/docs/LangRef.html#id1961)）
 
 此类别中的指令是“杂项”指令，无法进行更好的分类。
 
@@ -730,4 +782,4 @@ LLVM 支持多种处理[聚合](https://llvm.org/docs/LangRef.html#t-aggregate)�
 
 - 
 
-# 
+## 其他关键字
