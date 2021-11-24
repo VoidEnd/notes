@@ -340,6 +340,9 @@ ult，ule，ue，slt，sle，se，…,等等
      ```
 
      ```c++
+     // 正常情况下储存unsigned值
+     // 整数位宽 <= 64，使用VAL，否则使用pVal。
+     // pVal为地址
      APInt(unsigned numBits, uint64_t val, bool isSigned = false)
          : BitWidth(numBits) {
              if (isSingleWord()) {
