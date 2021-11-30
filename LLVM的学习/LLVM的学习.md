@@ -290,6 +290,12 @@ int main(){
 
 只进行了循环不变量的外提，因为mem2reg已经做过了SSA结构化处理。
 
+
+
+
+
+
+
 # LLVM 指令集
 
 LLVM 指令集由几种不同分类的指令组成：[终止符指令](https://llvm.org/docs/LangRef.html#terminators)、[二进制指令](https://llvm.org/docs/LangRef.html#binaryops)、[按位二进制指令](https://llvm.org/docs/LangRef.html#bitwiseops)、[内存指令](https://llvm.org/docs/LangRef.html#memoryops)和 [其他指令](https://llvm.org/docs/LangRef.html#otherops)。
