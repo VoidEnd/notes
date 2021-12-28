@@ -83,6 +83,7 @@ llvm-dis test2.bc -o test2.ll
 opt -licm test.ll -S -o test2.ll
 opt -licm test.bc -c -o test2.bc
 opt -help
+opt -mem2reg -S BO03.ll -o BO03-mem2reg.ll
 ```
 
 
@@ -158,7 +159,7 @@ int main()
 }
 ```
 
-![image-20211022213816114](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211022213816114.png)
+![image-20211022213816114](LLVM的学习.assets/image-20211022213816114.png)
 
 此示例我的主要关注点在`limit - 2`上，这是个显而易见的函数不变量，它存在于for循环的cond部分。
 
@@ -199,9 +200,9 @@ int main(){
 
 在此例子中，b和a分别为斐波那契数列的当前项的值和前一项的值且他们之和为下一项的值，显然在不断的循环中一直为真。
 
-![image-20211025165006152](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211025165006152.png)
+![image-20211025165006152](LLVM的学习.assets/image-20211025165006152.png)
 
-![image-20211025165047276](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211025165047276.png)
+![image-20211025165047276](LLVM的学习.assets/image-20211025165047276.png)
 
 - promoted：代码提升后缀，应该只是一种命名。
 - lcssa：loop closed ssa，闭环静态单赋值形式，应该只是一种命名，在exit块中使用，含义目前未知。
@@ -235,7 +236,7 @@ int main()
 }
 ```
 
-![image-20211028142357665](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211028142357665.png)
+![image-20211028142357665](LLVM的学习.assets/image-20211028142357665.png)
 
 licm的优化并没有直接获得结果，没有预期中的高级。
 
@@ -262,7 +263,7 @@ int main()
 }
 ```
 
-![image-20211028142657672](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211028142657672.png)
+![image-20211028142657672](LLVM的学习.assets/image-20211028142657672.png)
 
 licm的优化也没有直接得到`a = 2 * len`和`ptr = len`，而是通过循环进行计算的。
 
@@ -286,7 +287,7 @@ int main(){
 }
 ```
 
-![image-20211108002700042](/Users/mukyuuhate/Documents/GitHub/notes/LLVM的学习/LLVM的学习.assets/image-20211108002700042.png)
+![image-20211108002700042](LLVM的学习.assets/image-20211108002700042.png)
 
 只进行了循环不变量的外提，因为mem2reg已经做过了SSA结构化处理。
 
