@@ -57,6 +57,83 @@
 ## 注意事项
 
 - 只有要执行的命令前要加上`tab`，而且有的文本编辑器里的`tab`是四个空格，要格外注意，尽量用vim比较规范，且`/etc/vimrc`里不能设置`set expandtab`
+
+- Juliet Test make报错：std_thread.c:(.text+0xae): undefined reference to `pthread_create‘，解决方法：
+
+  ```
+  修改Makefile下面这行（60行）：
+  $(TARGET) : $(OBJECTS)
+            $(CPP) $(LFLAGS) $(OBJECTS) -o $(TARGET)
+  
+  修改为：
+  $(TARGET) : $(OBJECTS)
+            $(CPP) $(OBJECTS) -o $(TARGET) $(LFLAGS)
+  
+  ```
+
+- 批量编译带mem2reg选项的bc文件
+
+  ```makefile
+  AR=ar
+  LD=ld
+  CCPATH=
+  CC=$(CCPATH)clang
+  #CXX=$(CCPATH)clang++
+  INC = -I./testcasesupport
+  LIBS = -lm #-lpthread -lm -lstdc++
+  CFLAGS = -emit-llvm -S -g -Xclang -disable-O0-optnone
+  #注："\"后面不能有空格，并且该句写完后最好有个换行
+  
+  #注释部分推荐在单独的一行编写
+  
+  #只改下面几行变量值就够了
+  #动态库需要 -fPIC  -shared
+  
+  SOFLAGS = #-O2 -fPIC -shared
+  # Search paths
+  VPATH =
+  SRC_ROOT = .
+  
+  #这里递归遍历3级子目录
+  DIRS := $(shell find $(SRC_ROOT) -type d)
+  
+  #这里循环遍历目录的cpp文件
+  
+  #CPPFILES := $(foreach dir,$(DIRS),$(wildcard $(dir)/*.cpp))
+  CFILES += $(foreach dir,$(DIRS),$(wildcard $(dir)/*.c))
+  LLFILES += $(foreach dir,$(DIRS),$(wildcard $(dir)/*.ll))
+  CBCFILES += $(foreach dir,$(DIRS),$(wildcard $(dir)/*.bc))
+  
+  #定义宏
+  DEF = #-DLINUX -DENABLE_EPOLL
+  
+  #CPPLLS := $(patsubst %.cpp,%.ll, $(CPPFILES))
+  CLLS := $(patsubst %.c,%.ll, $(CFILES))
+  BCFILES := $(patsubst %.c,%.bc, $(CFILES))
+  MEM2REGFILES := $(patsubst %.c,%_mem2reg.ll, $(CFILES))
+  
+  
+  
+  all:$(CLLS) $(BCFILES) $(MEM2REGFILES) $(LOGFILES)
+  
+  $(CLLS):%.ll:%.c
+  	$(CC) $(CFLAGS) $< $(LLVMFLAGS) $(INC) -o $@ 
+  
+  $(BCFILES):%.bc:%.ll
+  	opt -mem2reg  $^ -o $@
+  
+  $(MEM2REGFILES):%_mem2reg.ll:%.bc
+  	llvm-dis $^  -o $@
+  
+  
+  .PHONY: clean
+  clean:
+  	rm -rf $(LLFILES) $(CBCFILES)
+  
+  ```
+
+  
+
 - 
 
 
@@ -368,6 +445,8 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/path)
 ## `lldb`
 
 [官方文档](https://lldb.llvm.org/use/tutorial.html)
+
+版本需要6.0
 
 ### 常用指令
 

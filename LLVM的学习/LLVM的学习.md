@@ -42,6 +42,11 @@ add_executable(simple-tool tool.cpp)
 target_link_libraries(simple-tool LLVM)
 ```
 
+# 注意事项
+
+1. 注意头文件的包含，很多错误是因此导致的；
+2. 
+
 # 函数
 
 - dump()
@@ -84,6 +89,13 @@ opt -licm test.ll -S -o test2.ll
 opt -licm test.bc -c -o test2.bc
 opt -help
 opt -mem2reg -S BO03.ll -o BO03-mem2reg.ll
+
+# 做opt优化的流程
+clang -S -g -emit-llvm -Xclang -disable-O0-optnone testcases.h std_testcase_io.h test.c -o test.c.ll
+opt -mem2reg -S test.c.ll -o test.ll
+
+# 添加链接库
+-I 路径
 ```
 
 
@@ -94,6 +106,8 @@ opt -mem2reg -S BO03.ll -o BO03-mem2reg.ll
 ; Function Attrs: noinline nounwind optnone uwtable
 
 attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "frame-pointer"="all" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+
+attributes #0 = { noinline norecurse optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "frame-pointer"="all" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
 ```
 
 

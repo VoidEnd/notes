@@ -99,6 +99,8 @@
 
   从存储区 **str2** 复制 **n** 个字节到存储区 **str1**。
 
+  溢出条件：`str1 < n || str2 < n`
+
   - **str1** -- 指向用于存储复制内容的目标数组，类型强制转换为 void* 指针。
   - **str2** -- 指向要复制的数据源，类型强制转换为 void* 指针。
   - **n** -- 要被复制的字节数。
@@ -109,6 +111,8 @@
   在头文件<string.h>中定义。
 
    **src** 所指向的字符串复制到 **dest**。需要注意的是如果目标数组 dest 不够大，而源字符串的长度又太长，可能会造成缓冲溢出的情况。
+
+  溢出条件：`dest < src`
 
   - **dest** -- 指向用于存储复制内容的目标数组。
   - **src** -- 要复制的字符串。
@@ -130,12 +134,49 @@
   - **dest** -- 指向目标数组，该数组包含了一个 C 字符串，且足够容纳追加后的字符串。
   - **src** -- 指向要追加的字符串，该字符串不会覆盖目标字符串。
 
-- **char \*strcpy(char \*dest, const char \*src)**
+- **void *memmove(void *str1, const void *str2, size_t n)**
 
   在头文件<string.h>中定义。
 
+  溢出条件：`str1 < n || str2 < n`
+
+  - **str1** -- 指向用于存储复制内容的目标数组，类型强制转换为 void* 指针。
+  - **str2** -- 指向要复制的数据源，类型强制转换为 void* 指针。
+  - **n** -- 要被复制的字节数。
+
+- **char *strncpy(char *dest, const char *src, size_t n)**
+
+  在头文件<string.h>中定义。
+
+  溢出条件：`dest < n`（因为是字符串，所以不需要判断`src < n`）
+
   - **dest** -- 指向用于存储复制内容的目标数组。
   - **src** -- 要复制的字符串。
+  - **n** -- 要从源中复制的字符数。
+
+- **int snprintf ( char * str, size_t size, const char * format, ... )**
+
+  在头文件<stdio.h>中定义。
+
+  - **str**  -- 目标字符串。
+  - **size** -- 拷贝字节数(Bytes)。
+  - **format** -- 格式化成字符串。
+  - **...** -- 可变参数。
+
+- **void *calloc(size_t nitems, size_t size)**
+
+  在头文件<stdlib.h>中定义。
+
+  - **nitems** --  要被分配的元素个数。
+  - **size** --  元素的大小。
+
+- **size_t strlen(const char *str)**
+
+  在头文件<string.h>中定义。
+
+  （对于宽字符集如果用strlen，得到长度为1）
+
+  - **str** -- 要计算长度的字符串。
 
 - 
 
